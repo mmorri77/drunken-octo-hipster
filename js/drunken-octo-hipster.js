@@ -26,7 +26,15 @@
    Declarations:  
    
  */
- var circle; 
+ var spriteLayer; 
+ var backgroundLayer;
+ var hitOptions = {
+    segments: true,
+    stroke: true,
+    fill: true,
+    tolerance: 5
+};
+
 
 /*
    init()
@@ -35,6 +43,7 @@
 function init() {
 
     //Let's begin with a couple of simple shapes to play with.  
+    spriteLayer = new Group();
     /*
         First, we'll make a simple red circle.  In Paper.js, we have an object prototype 
         called 'Path' to use to draw with.  Paths in Paper are just like paths you might've 
@@ -44,10 +53,22 @@ function init() {
         The path object comes with some handy built-in constructors for common shapes.  Here, we're 
         going to use the Path.Circle(c,r) function, where c is the center and r is the radius.  
     */
-    circle = new Path.Circle(view.center, 33);
+    var circle = new Path.Circle(new Point(view.center.x,view.center.y - 100), 33);
     circle.fillColor = 'red';  // fill is the area encapsulated by a closed path
     circle.strokeColor = 'black';  // stroke is the border area of the path
     circle.strokeWidth = 3;  // thickness of stroke
+    spriteLayer.addChild(circle);
+    
+    /*
+        Now, let's make a simple rectangle to use as a platform.  Because we don't want gravity 
+        to pull our platform down, we'll stick it in a different layer.  
+    */
+    backgroundLayer = new Group();
+    var rectangle = new Path.Rectangle(new Point((view.center.x - 100),(view.center.y + 200)),new Point((view.center.x + 100),(view.center.y + 150)));
+    rectangle.strokeColor = 'black';
+    rectangle.strokeWidth = 3;
+    rectangle.fillColor = 'blue';
+    backgroundLayer.addChild(rectangle);
 }
 
 /*
@@ -56,8 +77,7 @@ function init() {
     a continuous loop that will update up to sixty times/frames per second.  
  */
 function onFrame(event) {
-    circle.fillColor.hue += 3;   // cycle the hue of the circle's fillColor
-    pseudoGravity(project.activeLayer);  // a cheap, fake, gravity generator
+    pseudoGravity(spriteLayer);  // a cheap, fake, gravity generator
 }
 
 /*
@@ -66,11 +86,17 @@ function onFrame(event) {
  */
 function onKeyUp(event) {
     /*
-        We'll just make a simple reset button to show how key events work.  
+        We'll just make a simple reset command to show how the onKeyUp event works.  
+        Notice how the event doesn't fire until the key is released.  onKeyDown is a 
+        separate event.  
+        
+        Event objects contain information about the event that triggered them.  In this 
+        case, we examine the event.key to find out which key was released.  
     */
     if (event.key == 'r') {
-        circle.remove();
-        init();
+        spriteLayer.remove(); // clear the existing layers...
+        backgroundLayer.remove();
+        init();  // re-run init()
     }
 }
 
@@ -80,8 +106,9 @@ function onKeyUp(event) {
     acceleration, or other physics--just something to get us started...
  */
 function pseudoGravity(layer) {
+    //var potential;
     for (var i = 0;i < layer.children.length;i++) {
-        layer.children[i].position.y += 1;
+        layer.children[i].position.y += 10;
     }
 }
 
